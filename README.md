@@ -66,12 +66,13 @@ Data Explorer / Discourse API. SQL‑запрос возвращает:
 - `docker-compose.yml`;
 - конфиги Grafana, InfluxDB, n8n workflows (без секретов).
 - файл `.env.example` (образец). Настоящий `.env` с секретами хранится локально и не коммитится.
+- каталог `local-files/` – общая директория для чтения/записи файлов из n8n.
 
 Все изменения проходят через коммиты и redeploy. Развёртывание контейнеров из Git на сервере.
 
 ## Запуск инфраструктуры
 
-1. Скопируйте файл `.env.example` в `.env` и задайте значения. Для автоматической инициализации InfluxDB должны быть заполнены переменные `INFLUXDB_USERNAME`, `INFLUXDB_PASSWORD`, `INFLUXDB_ORG`, `INFLUXDB_BUCKET`, `INFLUXDB_ADMIN_TOKEN`.
+1. Скопируйте файл `.env.example` в `.env` и задайте значения. Помимо переменных для InfluxDB укажите `DOMAIN_NAME`, `SUBDOMAIN` и `SSL_EMAIL` – Traefik использует их для выдачи TLS‑сертификата. Для автоматической инициализации InfluxDB должны быть заполнены переменные `INFLUXDB_USERNAME`, `INFLUXDB_PASSWORD`, `INFLUXDB_ORG`, `INFLUXDB_BUCKET`, `INFLUXDB_ADMIN_TOKEN`.
 2. Перед стартом Grafana каталогу `grafana/` необходимо принадлежать пользователю с UID `472`:
    ```bash
    chown -R 472:472 grafana
@@ -83,7 +84,7 @@ Data Explorer / Discourse API. SQL‑запрос возвращает:
 4. Проверка сервисов:
    - InfluxDB – `curl -I http://localhost:8086/health`
    - Grafana – `curl -I http://localhost:3000/login`
-   - n8n – `curl -I http://localhost:5678`
+   - n8n – `curl -I https://$SUBDOMAIN.$DOMAIN_NAME`
 
 ## Локальная проверка SLA
 Для тестирования логики SLA в репозитории есть простой Python‑модуль `sla`,

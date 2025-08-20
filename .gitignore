@@ -10,6 +10,8 @@ vaultwarden/*
 !n8n/.gitkeep
 !grafana/.gitkeep
 !influxdb/.gitkeep
+local-files/*
+!local-files/.gitkeep
 
 # Logs
 *.log
