@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    environment:
+      - GENERIC_TIMEZONE=Europe/Moscow
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n:/home/node/.n8n
+
+  influxdb:
+    image: influxdb:2.7
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb:/var/lib/influxdb2
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana:/var/lib/grafana
+
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./vaultwarden:/data

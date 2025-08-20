@@ -1,0 +1,12 @@
+# Docker volumes
+n8n/*
+grafana/*
+influxdb/*
+vaultwarden/*
+!n8n/.gitkeep
+!grafana/.gitkeep
+!influxdb/.gitkeep
+!vaultwarden/.gitkeep
+
+# Logs
+*.log
