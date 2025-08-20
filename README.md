@@ -7,7 +7,7 @@
 - **n8n** – агрегация данных, проверка SLA, уведомления.
 - **InfluxDB** – хранение SLA‑логов.
 - **Grafana** – визуализация статистики и отчётов.
-- Секреты (Discourse API, Telegram Bot, InfluxDB) хранятся в n8n Credentials, в Git попадает только логика workflow.
+- Секреты (Discourse API, Telegram Bot, InfluxDB) хранятся в файле `.env` и в n8n Credentials; `.env` не коммитится, в Git попадает только логика workflow.
 
 ## SLA‑правила
 - Первый ответ и время реакции – не более 2 часов в рабочее время (пн–пт, 9:00–18:00 МСК).
@@ -65,6 +65,7 @@ Data Explorer / Discourse API. SQL‑запрос возвращает:
 В Git хранятся:
 - `docker-compose.yml`;
 - конфиги Grafana, InfluxDB, n8n workflows (без секретов).
+- файл `.env.example` (образец). Настоящий `.env` с секретами хранится локально и не коммитится.
 
 Все изменения проходят через коммиты и redeploy. Развёртывание контейнеров из Git на сервере.
 

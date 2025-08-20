@@ -10,3 +10,6 @@ vaultwarden/*
 
 # Logs
 *.log
+
+# Local environment files
+.env

@@ -4,8 +4,10 @@ services:
   n8n:
     image: n8nio/n8n:latest
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - GENERIC_TIMEZONE=Europe/Moscow
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
     ports:
       - "5678:5678"
     volumes:
@@ -14,6 +16,8 @@ services:
   influxdb:
     image: influxdb:2.7
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "8086:8086"
     volumes:
@@ -22,6 +26,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "3000:3000"
     volumes:
