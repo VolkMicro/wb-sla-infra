@@ -1,0 +1,13 @@
+{
+  "buckets": [
+    {
+      "name": "sla",
+      "retentionRules": [
+        {
+          "type": "expire",
+          "everySeconds": 2592000
+        }
+      ]
+    }
+  ]
+}

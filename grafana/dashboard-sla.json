@@ -1,0 +1,14 @@
+{
+  "title": "SLA Overview",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "SLA Violations",
+      "targets": [
+        {
+          "query": "from(bucket: \"sla\") |> range(start: -30d) |> filter(fn: (r) => r[\"event_type\"] == \"violation\")"
+        }
+      ]
+    }
+  ]
+}

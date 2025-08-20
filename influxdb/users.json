@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "name": "sla_writer",
+      "password": "CHANGE_ME",
+      "token": "sla-writer-token",
+      "permissions": {
+        "read": [],
+        "write": ["sla"]
+      }
+    }
+  ]
+}

@@ -81,3 +81,13 @@ python3 -m pytest -q
 Тесты проверяют сценарии предупреждений и нарушения SLA, включая учёт
 выходных и времени вне рабочего дня.
 
+
+## Файлы конфигурации
+
+- `grafana/datasource-influxdb.json` – настройка источника данных InfluxDB для Grafana.
+- `grafana/dashboard-sla.json` – дашборд с визуализацией нарушений SLA.
+- `influxdb/buckets.json` – bucket `sla` и политика хранения на 30 дней.
+- `influxdb/retention-policies.json` – параметры политики retention для `sla`.
+- `influxdb/users.json` – пользователь `sla_writer` и его токен.
+- `n8n/sla-check.json` – workflow проверки SLA и отправки уведомлений.
+- `n8n/daily-report.json` – workflow ежедневного отчёта по нарушениям.
