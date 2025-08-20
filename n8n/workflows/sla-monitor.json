@@ -1,0 +1,139 @@
+{
+  "name": "SLA Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": [{"mode": "everyX", "unit": "minutes", "value": 30}]
+      },
+      "id": "1",
+      "name": "SLA Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://discourse.example.com/admin/plugins/explorer/queries/1/run",
+        "responseFormat": "json",
+        "options": {
+          "headers": {
+            "Api-Key": "={{$env.DISCOURSE_API_KEY}}",
+            "Api-Username": "data-explorer"
+          }
+        }
+      },
+      "id": "2",
+      "name": "Fetch Tickets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date();\nreturn items.map(item => {\n  const t = item.json;\n  const created = new Date(t.created_at);\n  const diff = (now - created) / 60000;\n  const overdue = diff - 120;\n  if (overdue >= 60) t.sla = 'violation';\n  else if (overdue >= 30) t.sla = 'warn30';\n  else if (overdue >= 0) t.sla = 'warn60';\n  else t.sla = 'ok';\n  t.overdue_minutes = overdue > 0 ? overdue : 0;\n  return {json: t};\n});"
+      },
+      "id": "3",
+      "name": "Calc SLA",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "propertyName": "sla",
+        "dataType": "string",
+        "rules": [
+          {"value": "warn60"},
+          {"value": "warn30"},
+          {"value": "violation"}
+        ]
+      },
+      "id": "4",
+      "name": "Check SLA",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_WARN_CHAT}}",
+        "text": "Ticket {{$json.ticket_id}} will breach SLA in 1h"
+      },
+      "id": "5",
+      "name": "Warn 60m",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1050, 180]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_WARN_CHAT}}",
+        "text": "Ticket {{$json.ticket_id}} will breach SLA in 30m"
+      },
+      "id": "6",
+      "name": "Warn 30m",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$env.TELEGRAM_ALERT_CHAT}}",
+        "text": "Ticket {{$json.ticket_id}} violated SLA"
+      },
+      "id": "7",
+      "name": "Violation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1050, 420]
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "url": "http://influxdb:8086",
+        "org": "wirenboard",
+        "bucket": "sla",
+        "measurement": "events",
+        "fields": {
+          "overdue": "={{$json.overdue_minutes}}"
+        },
+        "tags": {
+          "ticket_id": "={{$json.ticket_id}}",
+          "event_type": "={{$json.sla}}"
+        }
+      },
+      "id": "8",
+      "name": "Log to Influx",
+      "type": "n8n-nodes-base.influxdb",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "SLA Cron": {
+      "main": [[{"node": "Fetch Tickets", "type": "main", "index": 0}]]
+    },
+    "Fetch Tickets": {
+      "main": [[{"node": "Calc SLA", "type": "main", "index": 0}]]
+    },
+    "Calc SLA": {
+      "main": [[{"node": "Check SLA", "type": "main", "index": 0}]]
+    },
+    "Check SLA": {
+      "main": [
+        [{"node": "Warn 60m", "type": "main", "index": 0}],
+        [{"node": "Warn 30m", "type": "main", "index": 0}],
+        [{"node": "Violation", "type": "main", "index": 0}]
+      ]
+    },
+    "Warn 60m": {
+      "main": [[{"node": "Log to Influx", "type": "main", "index": 0}]]
+    },
+    "Warn 30m": {
+      "main": [[{"node": "Log to Influx", "type": "main", "index": 0}]]
+    },
+    "Violation": {
+      "main": [[{"node": "Log to Influx", "type": "main", "index": 0}]]
+    }
+  }
+}

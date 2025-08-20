@@ -16,13 +16,29 @@ services:
     restart: unless-stopped
     ports:
       - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=wirenboard
+      - DOCKER_INFLUXDB_INIT_BUCKET=sla
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=supersecrettoken
+      - DOCKER_INFLUXDB_INIT_SCRIPT=/docker-entrypoint-initdb.d/init.sh
     volumes:
-      - ./influxdb:/var/lib/influxdb2
+      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
 
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - INFLUXDB_TOKEN=supersecrettoken
+      - GF_AUTH_ANONYMOUS_ENABLED=true
     volumes:
-      - ./grafana:/var/lib/grafana
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards

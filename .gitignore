@@ -1,12 +1,8 @@
-# Docker volumes
+grafana/data/*
+!grafana/data/.gitkeep
+influxdb/data/*
+!influxdb/data/.gitkeep
 n8n/*
-grafana/*
-influxdb/*
-vaultwarden/*
-!n8n/.gitkeep
-!grafana/.gitkeep
-!influxdb/.gitkeep
-!vaultwarden/.gitkeep
-
-# Logs
-*.log
+!n8n/workflows/
+n8n/workflows/*
+!n8n/workflows/sla-monitor.json

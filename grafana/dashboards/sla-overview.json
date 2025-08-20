@@ -1,0 +1,19 @@
+{
+  "id": null,
+  "title": "SLA Overview",
+  "schemaVersion": 27,
+  "version": 0,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Violations",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"sla\") |> range(start: -7d) |> filter(fn: (r) => r.event_type == \"violation\") |> count()"
+        }
+      ]
+    }
+  ]
+}
