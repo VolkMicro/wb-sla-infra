@@ -3,10 +3,13 @@ n8n/*
 grafana/*
 influxdb/*
 vaultwarden/*
+!n8n/*.json
+!grafana/*.json
+!influxdb/*.json
+!vaultwarden/.gitkeep
 !n8n/.gitkeep
 !grafana/.gitkeep
 !influxdb/.gitkeep
-!vaultwarden/.gitkeep
 
 # Logs
 *.log
