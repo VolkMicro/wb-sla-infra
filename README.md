@@ -69,6 +69,22 @@ Data Explorer / Discourse API. SQL‑запрос возвращает:
 
 Все изменения проходят через коммиты и redeploy. Развёртывание контейнеров из Git на сервере.
 
+## Запуск инфраструктуры
+
+1. Скопируйте файл `.env.example` в `.env` и задайте значения. Для автоматической инициализации InfluxDB должны быть заполнены переменные `INFLUXDB_USERNAME`, `INFLUXDB_PASSWORD`, `INFLUXDB_ORG`, `INFLUXDB_BUCKET`, `INFLUXDB_ADMIN_TOKEN`.
+2. Перед стартом Grafana каталогу `grafana/` необходимо принадлежать пользователю с UID `472`:
+   ```bash
+   chown -R 472:472 grafana
+   ```
+3. Запустите контейнеры:
+   ```bash
+   docker compose up -d
+   ```
+4. Проверка сервисов:
+   - InfluxDB – `curl -I http://localhost:8086/health`
+   - Grafana – `curl -I http://localhost:3000/login`
+   - n8n – `curl -I http://localhost:5678`
+
 ## Локальная проверка SLA
 Для тестирования логики SLA в репозитории есть простой Python‑модуль `sla`,
 который рассчитывает статус тикета с учётом рабочих часов. Запустить проверки
