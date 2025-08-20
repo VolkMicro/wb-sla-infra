@@ -26,11 +26,3 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana:/var/lib/grafana
-
-  vaultwarden:
-    image: vaultwarden/server:latest
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    volumes:
-      - ./vaultwarden:/data
