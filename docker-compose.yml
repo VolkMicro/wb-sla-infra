@@ -24,21 +24,22 @@ services:
     depends_on:
       - influxdb
 
-  n8n:
-    image: n8nio/n8n:1.42.0
+ n8n:
+    image: n8nio/n8n:latest
     restart: unless-stopped
+    environment:
+      - N8N_HOST=n8n.local
+      - N8N_PORT=5678
+      - WEBHOOK_URL=https://n8n.local/
+      - N8N_USER_FOLDER=/home/node/.n8n
+      - HOME=/home/node
     ports:
       - "5678:5678"
-    env_file: .env
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
     volumes:
-      - ./n8n:/home/node/.n8n
-      - ./local-files:/files
-    depends_on:
-      - influxdb
+      - n8n_data:/home/node/.n8n
+    user: "1000:1000"   # важное!
+volumes:
+  n8n_data:
 
   traefik:
     image: traefik:v3.0
