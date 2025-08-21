@@ -4,13 +4,12 @@ services:
     restart: unless-stopped
     ports:
       - "8086:8086"
-    env_file: .env
     environment:
-      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
-      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN}
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: default
+      DOCKER_INFLUXDB_INIT_BUCKET: default
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admintoken
     volumes:
       - ./influxdb:/var/lib/influxdb2
 
@@ -19,48 +18,28 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - ./grafana:/var/lib/grafana
     depends_on:
       - influxdb
 
- n8n:
+  n8n:
     image: n8nio/n8n:latest
     restart: unless-stopped
     environment:
-      - N8N_HOST=n8n.local
-      - N8N_PORT=5678
-      - WEBHOOK_URL=https://n8n.local/
-      - N8N_USER_FOLDER=/home/node/.n8n
-      - HOME=/home/node
+      N8N_HOST: 0.0.0.0
+      N8N_PORT: 5678
+      WEBHOOK_URL: http://localhost:5678/
+      N8N_USER_FOLDER: /home/node/.n8n
+      HOME: /home/node
     ports:
       - "5678:5678"
     volumes:
       - n8n_data:/home/node/.n8n
-    user: "1000:1000"   # важное!
+    user: "1000:1000"
+
 volumes:
   n8n_data:
-
-  traefik:
-    image: traefik:v3.0
-    restart: unless-stopped
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      - --certificatesresolvers.letsencrypt.acme.email=${SSL_EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt
-    labels:
-      - "traefik.http.routers.n8n.rule=Host(`${SUBDOMAIN}.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.n8n.entrypoints=websecure"
-      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
