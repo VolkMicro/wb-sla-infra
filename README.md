@@ -20,6 +20,9 @@ curl -I http://localhost:3000/login
 ```
 Default login: `admin` / `admin`.
 
+The Grafana container runs as the root user so it can write to the local
+`grafana/` directory used for data persistence.
+
 ### Step 3 – n8n
 ```bash
 docker compose up -d n8n
