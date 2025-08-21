@@ -18,6 +18,9 @@ curl -I http://localhost:8086/health
 Default login: `admin` / `adminpassword`, token `admintoken`. Update these
 values in `docker-compose.yml` to secure your deployment.
 
+The container also creates a `services` bucket and writes a token with
+read/write access to `influxdb/services-token.json` for other services to use.
+
 ### Step 2 – Grafana
 ```bash
 docker compose up -d grafana

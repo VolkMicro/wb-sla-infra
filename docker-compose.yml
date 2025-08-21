@@ -7,13 +7,16 @@ services:
     environment:
       # Default credentials for local development.
       # Change these values before deploying anywhere serious.
+      DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: admin
       DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
       DOCKER_INFLUXDB_INIT_ORG: default
       DOCKER_INFLUXDB_INIT_BUCKET: default
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: admintoken
+      DOCKER_INFLUXDB_INIT_SCRIPT: /docker-entrypoint-initdb.d/init-services.sh
     volumes:
       - ./influxdb:/var/lib/influxdb2
+      - ./influxdb/init-services.sh:/docker-entrypoint-initdb.d/init-services.sh:ro
 
   grafana:
     image: grafana/grafana:10.4.0
