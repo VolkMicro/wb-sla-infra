@@ -3,6 +3,7 @@
 # Data directories
 /influxdb/*
 !/influxdb/.gitkeep
+!/influxdb/init-services.sh
 /grafana/*
 !/grafana/.gitkeep
 /n8n/*
