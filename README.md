@@ -1,126 +1,39 @@
-# Контроль SLA на портале техподдержки Wiren Board
+# SLA Infrastructure
 
-## Цель
-Контроль SLA и предотвращение нарушений на портале техподдержки Wiren Board. Автоматизация уведомлений и отчётности.
+Infrastructure for monitoring SLA violations with InfluxDB, Grafana, n8n and Traefik.
 
-## Архитектура
-- **n8n** – агрегация данных, проверка SLA, уведомления.
-- **InfluxDB** – хранение SLA‑логов.
-- **Grafana** – визуализация статистики и отчётов.
-- Секреты (Discourse API, Telegram Bot, InfluxDB) хранятся в файле `.env` и в n8n Credentials; `.env` не коммитится, в Git попадает только логика workflow.
+## Quick start
 
-## SLA‑правила
-- Первый ответ и время реакции – не более 2 часов в рабочее время (пн–пт, 9:00–18:00 МСК).
-- Оповещения:
-  - за 1 час до дедлайна;
-  - за 30 минут до дедлайна;
-  - «Ахтунг» при нарушении SLA (после 2 часов).
-- Проверка SLA каждые 30 минут.
-- Если тикет уже предупреждён, повторно предупреждение не отправляется (только нарушение).
-- Утренний отчёт (08:00 МСК): список всех тикетов без ответа, где SLA нарушен.
-- Закрытие по неактивности:
-  - если наш последний ответ и клиент молчит 14 дней – напоминание инженеру;
-  - если клиент молчит 3 дня – напоминание инженеру «пнуть клиента».
-
-## Источник данных
-Data Explorer / Discourse API. SQL‑запрос возвращает:
-- `ticket_id`
-- `status` (open / in progress / closed)
-- `assignee`
-- `author`
-- `created_at`
-- `last_post_at`
-
-## Telegram‑уведомления
-- Формат: короткий текст + ссылка на тикет.
-- Получатели: инженер и/или дежурный.
-- Каналы доставки:
-  - ⚠ предупреждения и ❌ нарушения – в общий чат;
-  - персональные уведомления в ЛС инженерам (если есть username).
-
-## Grafana и отчётность
-Метрики в InfluxDB:
-- `ticket_id`
-- `assignee`
-- `event_type` (warn / violation)
-- `timestamp`
-- `overdue_minutes`
-
-Визуализация:
-- Статистика по инженерам (кто сколько нарушил SLA).
-- Ежедневные итоги (% SLA выполненных, среднее время ответа).
-- История нарушений.
-- Ежедневный отчёт по команде.
-
-## Логика SLA в n8n
-- **Cron** (каждые 30 минут).
-- **HTTP Request** → Data Explorer API (SQL‑запрос).
-- **Function Node** → расчёт SLA с учётом рабочих часов.
-- **Switch Node** → ветки предупреждение (1 час), предупреждение (30 мин), нарушение.
-- **Telegram Node** → бот шлёт уведомления.
-- **InfluxDB Node** → логирование события.
-- Отдельный **Cron** (08:00 МСК) → отчёт о всех нарушенных SLA.
-
-## Git и IaC
-В Git хранятся:
-- `docker-compose.yml`;
-- конфиги Grafana, InfluxDB, n8n workflows (без секретов).
-- файл `.env.example` (образец). Настоящий `.env` с секретами хранится локально и не коммитится.
-- каталог `local-files/` – общая директория для чтения/записи файлов из n8n.
-
-Все изменения проходят через коммиты и redeploy. Развёртывание контейнеров из Git на сервере.
-
-## Запуск инфраструктуры
-
-1. Скопируйте файл `.env.example` в `.env` и задайте значения. Помимо переменных для InfluxDB укажите `DOMAIN_NAME`, `SUBDOMAIN` и `SSL_EMAIL` – Traefik использует их для выдачи TLS‑сертификата. Для автоматической инициализации InfluxDB должны быть заполнены переменные `INFLUXDB_USERNAME`, `INFLUXDB_PASSWORD`, `INFLUXDB_ORG`, `INFLUXDB_BUCKET`, `INFLUXDB_ADMIN_TOKEN`.
-2. Перед стартом Grafana каталогу `grafana/` необходимо принадлежать пользователю с UID `472`:
+1. Copy environment file and adjust values:
    ```bash
-   chown -R 472:472 grafana
+   cp .env.example .env
    ```
-3. Запустите контейнеры:
-   ```bash
-   docker compose up -d
-   ```
-4. Проверка сервисов:
-   - InfluxDB – `curl -I http://localhost:8086/health`
-   - Grafana – `curl -I http://localhost:3000/login`
-   - n8n – `curl -I https://$SUBDOMAIN.$DOMAIN_NAME`
 
-### Локальный запуск без Traefik
+2. Run services step by step.
 
-Для разработки или тестирования сервисы можно поднять без Traefik, используя
-отдельный compose-файл:
-
-1. Скопируйте `.env.example` в `.env` и заполните переменные для InfluxDB.
-   Параметры `DOMAIN_NAME`, `SUBDOMAIN` и `SSL_EMAIL` в локальном режиме не используются.
-2. Запустите контейнеры:
-   ```bash
-   docker compose -f docker-compose.local.yml up -d
-   ```
-3. Проверка сервисов:
-   - InfluxDB – `curl -I http://localhost:8086/health`
-   - Grafana – `curl -I http://localhost:3000/login`
-   - n8n – `curl -I http://localhost:5678`
-
-## Локальная проверка SLA
-Для тестирования логики SLA в репозитории есть простой Python‑модуль `sla`,
-который рассчитывает статус тикета с учётом рабочих часов. Запустить проверки
-можно командой:
-
+### Step 1 – InfluxDB
 ```bash
-python3 -m pytest -q
+docker compose up -d influxdb
+curl -I http://localhost:8086/health
 ```
 
-Тесты проверяют сценарии предупреждений и нарушения SLA, включая учёт
-выходных и времени вне рабочего дня.
+### Step 2 – Grafana
+```bash
+docker compose up -d grafana
+curl -I http://localhost:3000/login
+```
 
+### Step 3 – n8n
+```bash
+docker compose up -d n8n
+curl -I http://localhost:5678
+```
 
-## Файлы конфигурации
+### Step 4 – Traefik (HTTPS)
+Add `DOMAIN_NAME`, `SUBDOMAIN` and `SSL_EMAIL` to `.env`.
+```bash
+docker compose up -d traefik
+```
+After DNS is configured, open `https://$SUBDOMAIN.$DOMAIN_NAME`.
 
-- `grafana/datasource-influxdb.json` – настройка источника данных InfluxDB для Grafana.
-- `grafana/dashboard-sla.json` – дашборд с визуализацией нарушений SLA.
-- `influxdb/buckets.json` – bucket `sla` и политика хранения на 30 дней.
-- `influxdb/retention-policies.json` – параметры политики retention для `sla`.
-- `influxdb/users.json` – пользователь `sla_writer` и его токен.
-- `n8n/sla-check.json` – workflow проверки SLA и отправки уведомлений.
-- `n8n/daily-report.json` – workflow ежедневного отчёта по нарушениям.
+Data is stored in `influxdb/`, `grafana/`, `n8n/`, `local-files/` and `letsencrypt/`.

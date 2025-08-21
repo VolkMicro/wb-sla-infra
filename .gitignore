@@ -1,20 +1,13 @@
-# Docker volumes
-n8n/*
-grafana/*
-influxdb/*
-vaultwarden/*
-!n8n/*.json
-!grafana/*.json
-!influxdb/*.json
-!vaultwarden/.gitkeep
-!n8n/.gitkeep
-!grafana/.gitkeep
-!influxdb/.gitkeep
-local-files/*
-!local-files/.gitkeep
-
-# Logs
-*.log
-
-# Local environment files
 .env
+
+# Data directories
+/influxdb/*
+!/influxdb/.gitkeep
+/grafana/*
+!/grafana/.gitkeep
+/n8n/*
+!/n8n/.gitkeep
+/local-files/*
+!/local-files/.gitkeep
+/letsencrypt/*
+!/letsencrypt/.gitkeep
