@@ -86,6 +86,22 @@ Data Explorer / Discourse API. SQL‑запрос возвращает:
    - Grafana – `curl -I http://localhost:3000/login`
    - n8n – `curl -I https://$SUBDOMAIN.$DOMAIN_NAME`
 
+### Локальный запуск без Traefik
+
+Для разработки или тестирования сервисы можно поднять без Traefik, используя
+отдельный compose-файл:
+
+1. Скопируйте `.env.example` в `.env` и заполните переменные для InfluxDB.
+   Параметры `DOMAIN_NAME`, `SUBDOMAIN` и `SSL_EMAIL` в локальном режиме не используются.
+2. Запустите контейнеры:
+   ```bash
+   docker compose -f docker-compose.local.yml up -d
+   ```
+3. Проверка сервисов:
+   - InfluxDB – `curl -I http://localhost:8086/health`
+   - Grafana – `curl -I http://localhost:3000/login`
+   - n8n – `curl -I http://localhost:5678`
+
 ## Локальная проверка SLA
 Для тестирования логики SLA в репозитории есть простой Python‑модуль `sla`,
 который рассчитывает статус тикета с учётом рабочих часов. Запустить проверки
